@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
  
 app.get('/', (req, res, next) => {
-    res.json({message: "ordem e progresso server is up"});
+    res.json({message: "mrp server is up"});
 })
  
 /* app.get('/clientes', verifyJWT, (req, res, next) => { 
