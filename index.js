@@ -1,4 +1,4 @@
-require("dotenv-safe").config();
+if (process.env.NODE_ENV !== 'production') require('dotenv').config()
 const jwt = require('jsonwebtoken');
 const http = require('http'); 
 const express = require('express'); 
