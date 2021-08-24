@@ -3,19 +3,31 @@ const http = require('http');
 const express = require('express'); 
 const app = express(); 
 const PORT = process.env.PORT || 5000
-
+const db = require("./db");
  
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
  
 app.get('/', (req, res, next) => {
-    res.json({message: "Tudo ok por aqui!"});
+    res.json({message: "ordem e progresso server is up"});
 })
  
-app.get('/clientes', verifyJWT, (req, res, next) => { 
+/* app.get('/clientes', verifyJWT, (req, res, next) => { 
     console.log("Retornou todos clientes!");
     res.json([{id:1,nome:'luiz'}]);
-}) 
+})  */
+
+app.get('/redes', redes);
+
+async function redes(req, res){ 
+  try {
+    //const redes = [{id:1, nome:'Principal'},{id:2, nome:'Orc Sorridente'}]  
+    const [redes] = await db.selectRede();
+    res.json(redes);
+  } catch (error) {
+    res.status(500)
+  }
+} 
 
 //authentication
 app.post('/login', (req, res, next) => {
@@ -31,6 +43,13 @@ app.post('/login', (req, res, next) => {
     res.status(500).json({message: 'Login inválido!'});
 
 })
+
+/* transferirPontos(redeId,contaOrigem,contaDestino, pontos)  
+ 
+app.get('/transferirPontos', verifyJWT, (req, res, next) => { 
+    req.body.user
+    res.json([{id:1,nome:'luiz'}]);
+}) */
 
 
 app.post('/logout', function(req, res) {
