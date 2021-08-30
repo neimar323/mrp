@@ -59,13 +59,28 @@ async function redes(req, res){
     res.status(500);
     res.json(error);
   }
+}
+
+
+app.get('/genesis', genesis);
+
+async function genesis(req, res){ 
+  try {
+    var id_rede = req.query.id_rede; 
+    console.log(id_rede)
+    const [genesis] = await db.selectGenesis(id_rede);
+    res.json(genesis);
+  } catch (error) {
+    res.status(500);
+    res.json(error);
+  }
 } 
 
 app.post('/login', login);
 
 async function login(req, res, next){ 
   try { 
-    //console.log(req.body.user, req.body.password, req.body.rede)
+    console.log(req.body.user, req.body.password, req.body.rede)
     const [result] = await db.selectLogin(req.body.user, req.body.password, req.body.id_rede);
     const idUsuario = result[0].id_usuario
     if( idUsuario > 0 ){

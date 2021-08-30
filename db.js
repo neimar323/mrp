@@ -36,6 +36,23 @@ async function selectLogin(conta, password, idRede){
 } 
 
 
+async function selectGenesis(idRede){
+    const conn = await connect();
+    console.log(idRede)
+    const sql = `select t.valor, uo.conta, ud.conta, t.data 
+    from transacao t, usuario uo, usuario ud
+    where t.id_usuario_orig = uo.id_usuario
+    and t.id_usuario_dest = ud.id_usuario 
+    and uo.tipo = 0
+    and t.id_rede = ? 
+    order by t.data desc  `
+
+    const ret = await conn.query(sql, [idRede]) 
+    conn.end;
+    return ret;
+
+} 
+
 async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valor){
     const conn = await connect();
     const sql = "CALL transacao(?,?,?,?,@result); select @result as result";
@@ -52,4 +69,4 @@ async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valo
 
 
 
-module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo}
+module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis}
