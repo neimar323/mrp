@@ -33,12 +33,21 @@ app.use(function (req, res, next) {
 app.get('/', (req, res, next) => {
     res.json({message: "mrp server is up"});
 })
- 
-/* app.get('/clientes', verifyJWT, (req, res, next) => { 
-    console.log("Retornou todos clientes!");
-    res.json([{id:1,nome:'luiz'}]);
-})  */
 
+
+app.get('/saldo', verifyJWT, saldo);
+
+async function saldo(req, res){ 
+  try {
+    var id_usuario = req.query.id_usuario;
+    const [saldo] = await db.selectSaldo(id_usuario);
+    res.json(saldo);
+  } catch (error) {
+    res.status(500);
+    res.json(error);
+  }
+} 
+ 
 app.get('/redes', redes);
 
 async function redes(req, res){ 
@@ -47,37 +56,64 @@ async function redes(req, res){
     const [redes] = await db.selectRede();
     res.json(redes);
   } catch (error) {
-    res.status(500)
+    res.status(500);
+    res.json(error);
+  }
+} 
+
+app.post('/login', login);
+
+async function login(req, res, next){ 
+  try { 
+    //console.log(req.body.user, req.body.password, req.body.rede)
+    const [result] = await db.selectLogin(req.body.user, req.body.password, req.body.id_rede);
+    const idUsuario = result[0].id_usuario
+    if( idUsuario > 0 ){
+      const id = result[0].id_usuario;
+      const token = jwt.sign({ id }, process.env.SECRET, {
+        expiresIn: 30000 
+      }); 
+      return res.json({ auth: true, token: token });
+    }else{ //esse else n ta funfando 
+      res.status(401);
+      return res.json("Login inválido.");
+    }
+  } catch (error) {
+    res.status(500);
+    console.log(error)
+    return res.json(error);
   }
 } 
 
 
+app.post('/transacao',  verifyJWT, transacao);
 
-//authentication
-app.post('/login', (req, res, next) => {
-    //esse teste abaixo deve ser feito no seu banco de dados
-    if(req.body.user === 'luiz' && req.body.password === '123'){
-      const id = 1; //esse id viria do banco de dados
-      const token = jwt.sign({ id }, process.env.SECRET, {
-        expiresIn: 300 // 
-      });
-      console.log("login ok");
-      return res.json({ auth: true, token: token });
-    }
 
-    console.log("login NOT ok");
+//falta verificar se o token foi gerado pelo usuario mesmo
+async function transacao(req, res, next){ 
+  try { 
+    //console.log(req.body.idRede,req.body.idUsuarioOrigem,req.body.idUsuarioDestino,req.body.valor)
     
-    res.status(500).json({message: 'Login inválido!'});
+    const [sqlExec] = await db.insertTransaction(req.body.idRede, req.body.idUsuarioOrigem, req.body.idUsuarioDestino, req.body.valor);
+    const result = sqlExec[1][0].result
 
-})
-
-/* transferirPontos(redeId,contaOrigem,contaDestino, pontos)  
- 
-app.get('/transferirPontos', verifyJWT, (req, res, next) => { 
-    req.body.user
-    res.json([{id:1,nome:'luiz'}]);
-}) */
-
+    if(result === 1 ){
+      res.status(200);
+      return res.json("Transacao efetuada");
+    }else if(result === -1){
+      res.status(401);
+      return res.json("Transacao NAO FOI efetuada. Valor invalido.");
+    }else if(result === -2){
+      res.status(401);
+      return res.json("Transacao NAO FOI efetuada. SEM SALDO.");
+    }
+   
+  } catch (error) {
+    res.status(500);
+    console.log(error)
+    return res.json(error);
+  }
+} 
 
 app.post('/logout', function(req, res) {
     res.json({ auth: false, token: null });
@@ -85,14 +121,15 @@ app.post('/logout', function(req, res) {
 
 
 function verifyJWT(req, res, next){
+
     const token = req.headers['token'];
-    console.log(token)
+
     if (!token) return res.status(401).json({ auth: false, message: 'No token provided.' });
     
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
       if (err) return res.status(500).json({ auth: false, message: 'Failed to authenticate token.' });
       
-      req.userId = decoded.id;
+      req.userId = decoded.id;  
       next();
     });
 
