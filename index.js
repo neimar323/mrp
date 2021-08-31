@@ -19,7 +19,7 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
   // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,token');
 
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)
@@ -37,8 +37,9 @@ app.get('/', (req, res, next) => {
 
 app.get('/saldo', verifyJWT, saldo);
 
-async function saldo(req, res){ 
+async function saldo(req, res, next){ 
   try {
+    console.log('called saldo')
     var id_usuario = req.query.id_usuario;
     const [saldo] = await db.selectSaldo(id_usuario);
     res.json(saldo);
@@ -60,6 +61,7 @@ app.get('/redes', redes);
 async function redes(req, res){ 
   try {
     //const redes = [{id:1, nome:'Principal'},{id:2, nome:'Orc Sorridente'}]  
+    console.log('called redes')
     const [redes] = await db.selectRede();
     res.json(redes);
   } catch (error) {
@@ -115,17 +117,28 @@ async function login(req, res, next){
 
 app.post('/transacao',  verifyJWT, transacao);
 
-
 //falta verificar se o token foi gerado pelo usuario mesmo
 async function transacao(req, res, next){ 
   try { 
-    //console.log(req.body.idRede,req.body.idUsuarioOrigem,req.body.idUsuarioDestino,req.body.valor,req.body.mensagem)
+    //console.log(req.body.idRede,req.body.idUsuarioOrigem,req.body.idUsuarioDestino,req.body.valor,req.body.mensagem, req.body.contaDestino)
+    var idUsuarioDestino= req.body.idUsuarioDestino
+    const idRede = req.body.idRede
+    const idUsuarioOrigem = req.body.idUsuarioOrigem    
+    const valor= req.body.valor
+    const mensagem = req.body.mensagem
+    const contaDestino = req.body.contaDestino
+
+
+    if(typeof idUsuarioDestino === 'undefined' && typeof contaDestino !== 'undefined'){
+      const [ret] = await db.getIdUsuarioDestino(idRede, contaDestino)
+      idUsuarioDestino = ret[0].id_usuario
+    }
     
-    const [sqlExec] = await db.insertTransaction(req.body.idRede,
-    req.body.idUsuarioOrigem,
-    req.body.idUsuarioDestino,
-    req.body.valor,
-    req.body.mensagem);
+    const [sqlExec] = await db.insertTransaction(idRede,
+    idUsuarioOrigem,
+    idUsuarioDestino,
+    valor,
+    mensagem);
 
     const result = sqlExec[1][0].result
 

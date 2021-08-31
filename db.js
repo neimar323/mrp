@@ -1,11 +1,9 @@
-
 async function connect(){
     const mysql = require("mysql2/promise");
     const connection = await mysql.createConnection(process.env.CLEARDB_DATABASE_URL.replace('?reconnect=true', '')+
     "?multipleStatements=true");
     return connection;
 }
-
 
 async function selectRede(){
     const conn = await connect();
@@ -40,11 +38,19 @@ async function selectLogin(conta, password, idRede){
 
 } 
 
+async function getIdUsuarioDestino(idRede, conta){
+    const conn = await connect();
+    const sql = "select id_usuario from usuario where conta = ? and id_rede = ? "
+    const ret = await conn.query(sql, [conta, idRede]) 
+    conn.end;
+    return ret;
+
+} 
 
 async function selectGenesis(idRede){
     const conn = await connect();
 
-    const sql = `select t.valor, uo.conta, ud.conta, t.data, t.mensagem 
+    const sql = `select t.valor, uo.conta as conta_origem, ud.conta as conta_destino, t.data, t.mensagem 
     from transacao t, usuario uo, usuario ud
     where t.id_usuario_orig = uo.id_usuario
     and t.id_usuario_dest = ud.id_usuario 
@@ -72,6 +78,4 @@ async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valo
 
 } 
 
-
-
-module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis}
+module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino}
