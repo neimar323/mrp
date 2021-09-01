@@ -7,41 +7,41 @@ async function connect(){
 
 async function selectRede(){
     const conn = await connect();
-    const rows = conn.query('select id_rede, nome from rede');
+    const rows = conn.query('select id_rede as idRede, nome from rede');
     //console.log(rows)
     const ret = await rows;
     conn.end;
     return ret;
 } 
 
-async function selectSaldo(id_usuario){
+async function selectSaldo(idUsuario){
     const conn = await connect();
-    sql = `select saldo, r.sigla_ponto
+    sql = `select saldo, r.sigla_ponto as siglaPonto
     from usuario u, rede r 
     where id_usuario = ?
     and r.id_rede = u.id_rede
     `
-    const rows = conn.query(sql, [id_usuario]);
+    const rows = conn.query(sql, [idUsuario]);
     //console.log(rows)
     const ret = await rows;
     conn.end;
     return ret;
 } 
 
-async function selectLogin(conta, password, idRede){
+async function selectLogin(email, password, idRede){
     const conn = await connect();
-    const sql = 'select id_usuario from usuario where conta = ? and password = ? and id_rede = ? ';
+    const sql = 'select id_usuario as idUsuario from usuario where email = ? and password = ? and id_rede = ? ';
 
-    const ret = await conn.query(sql, [conta, password, idRede]) 
+    const ret = await conn.query(sql, [email, password, idRede]) 
     conn.end;
     return ret;
 
 } 
 
-async function getIdUsuarioDestino(idRede, conta){
+async function getIdUsuarioDestino(idRede, email){
     const conn = await connect();
-    const sql = "select id_usuario from usuario where conta = ? and id_rede = ? "
-    const ret = await conn.query(sql, [conta, idRede]) 
+    const sql = "select id_usuario as idUsuario from usuario where email = ? and id_rede = ? "
+    const ret = await conn.query(sql, [email, idRede]) 
     conn.end;
     return ret;
 
@@ -50,7 +50,7 @@ async function getIdUsuarioDestino(idRede, conta){
 async function selectGenesis(idRede){
     const conn = await connect();
 
-    const sql = `select t.valor, uo.conta as conta_origem, ud.conta as conta_destino, t.data, t.mensagem 
+    const sql = `select t.valor, uo.email as email_origem, ud.email as email_destino, t.data, t.mensagem 
     from transacao t, usuario uo, usuario ud
     where t.id_usuario_orig = uo.id_usuario
     and t.id_usuario_dest = ud.id_usuario 

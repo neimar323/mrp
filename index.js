@@ -40,8 +40,8 @@ app.get('/saldo', verifyJWT, saldo);
 async function saldo(req, res, next){ 
   try {
     console.log('called saldo')
-    var id_usuario = req.query.id_usuario;
-    const [saldo] = await db.selectSaldo(id_usuario);
+    var idUsuario = req.query.idUsuario;
+    const [saldo] = await db.selectSaldo(idUsuario);
     res.json(saldo);
   } catch (error) {
     res.status(500);
@@ -75,9 +75,9 @@ app.get('/genesis', genesis);
 
 async function genesis(req, res){ 
   try {
-    var id_rede = req.query.id_rede; 
+    var idRede = req.query.idRede; 
 
-    const [genesis] = await db.selectGenesis(id_rede);
+    const [genesis] = await db.selectGenesis(idRede);
     res.json(genesis);
   } catch (error) {
     res.status(500);
@@ -89,20 +89,19 @@ app.post('/login', login);
 
 async function login(req, res, next){ 
   try { 
-    //console.log(req.body.user, req.body.password, req.body.id_rede)
+    //console.log(req.body.email, req.body.password, req.body.idRede)
 
     const hashedPWD = hashMRP(req.body.password)
 
     //console.log(hashedPWD)
 
-    const [result] = await db.selectLogin(req.body.user, hashedPWD, req.body.id_rede);
-    const idUsuario = result[0].id_usuario
+    const [result] = await db.selectLogin(req.body.email, hashedPWD, req.body.idRede);
+    const idUsuario = result[0].idUsuario
     if( idUsuario > 0 ){
-      const id = result[0].id_usuario;
-      const token = jwt.sign({ id }, process.env.SECRET, {
+      const token = jwt.sign({ idUsuario }, process.env.SECRET, {
         expiresIn: 30000 
       }); 
-      return res.json({ auth: true, token: token, id_usuario: idUsuario});
+      return res.json({ auth: true, token: token, idUsuario: idUsuario});
     }else{ //esse else n ta funfando 
       res.status(401);
       return res.json("Login inválido.");
@@ -120,18 +119,18 @@ app.post('/transacao',  verifyJWT, transacao);
 //falta verificar se o token foi gerado pelo usuario mesmo
 async function transacao(req, res, next){ 
   try { 
-    //console.log(req.body.idRede,req.body.idUsuarioOrigem,req.body.idUsuarioDestino,req.body.valor,req.body.mensagem, req.body.contaDestino)
+    console.log(req.body.idRede,req.body.idUsuarioOrigem,req.body.idUsuarioDestino,req.body.valor,req.body.mensagem, req.body.emailDestino)
     var idUsuarioDestino= req.body.idUsuarioDestino
     const idRede = req.body.idRede
     const idUsuarioOrigem = req.body.idUsuarioOrigem    
     const valor= req.body.valor
     const mensagem = req.body.mensagem
-    const contaDestino = req.body.contaDestino
+    const emailDestino = req.body.emailDestino
 
 
-    if(typeof idUsuarioDestino === 'undefined' && typeof contaDestino !== 'undefined'){
-      const [ret] = await db.getIdUsuarioDestino(idRede, contaDestino)
-      idUsuarioDestino = ret[0].id_usuario
+    if(typeof idUsuarioDestino === 'undefined' && typeof emailDestino !== 'undefined'){
+      const [ret] = await db.getIdUsuarioDestino(idRede, emailDestino)
+      idUsuarioDestino = ret[0].idUsuario
     }
     
     const [sqlExec] = await db.insertTransaction(idRede,
