@@ -49,11 +49,11 @@ async function getIdUsuarioDestino(idRede, email){
 
 async function selectExtrato(idUsuario){
     const conn = await connect();
-    const sql = `select 'Debito' as tipo, valor, email, data from transacao, usuario 
+    const sql = `select 'Debito' as tipo, valor, email, mensagem, data from transacao, usuario 
     where id_usuario_orig = ?
     and id_usuario = id_usuario_dest
     union
-    select 'Credito' as tipo, valor, email, data  from transacao, usuario 
+    select 'Credito' as tipo, valor, email, mensagem, data  from transacao, usuario 
     where id_usuario_dest = ?
     and id_usuario = id_usuario_orig`
     const ret = await conn.query(sql, [idUsuario, idUsuario]) 
