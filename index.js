@@ -130,6 +130,29 @@ async function login(req, res, next){
 } 
 
 
+app.post('/registrar', registrar);
+
+async function registrar(req, res, next){ 
+  try { 
+    const passwordHashed = hashMRP(req.body.password)
+    const idRede = req.body.idRede
+    const nome = req.body.nome
+    const email = req.body.email
+
+    await db.insertUsuario(idRede, nome, email, passwordHashed);
+    res.status(200);
+    return res.json("Conta criada");
+  } catch (error) {
+    res.status(500);
+    console.log(error)
+    return res.json(error);
+  }
+} 
+
+
+
+
+
 app.post('/transacao',  verifyJWT, transacao);
 
 //falta verificar se o token foi gerado pelo usuario mesmo

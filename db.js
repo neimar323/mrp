@@ -80,6 +80,19 @@ async function selectGenesis(idRede){
 
 } 
 
+async function insertUsuario(idRede, nome, email, password){
+    const conn = await connect();
+    const sql = `insert into usuario (nome, email, password, dt_criacao, id_rede, saldo, tipo) 
+    values (?,?,?, now(), ?, 0, 1) `;
+    const sqlExec = conn.query(sql, [nome, email, password, idRede],function(err,rows){
+        if(err) throw err;
+        console.log(rows);
+    });
+
+    const ret = await sqlExec
+    conn.end()
+} 
+
 async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valor, mensagem){
     const conn = await connect();
     const sql = "CALL transacao(?,?,?,?,?, @result); select @result as result";
@@ -94,4 +107,4 @@ async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valo
 
 } 
 
-module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino, selectExtrato}
+module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino, selectExtrato, insertUsuario}
