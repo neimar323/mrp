@@ -10,7 +10,7 @@ async function selectRede(){
     const rows = conn.query('select id_rede as idRede, nome from rede');
     //console.log(rows)
     const ret = await rows;
-    conn.end;
+    conn.end()
     return ret;
 } 
 
@@ -24,7 +24,7 @@ async function selectSaldo(idUsuario){
     const rows = conn.query(sql, [idUsuario]);
     //console.log(rows)
     const ret = await rows;
-    conn.end;
+    conn.end()
     return ret;
 } 
 
@@ -33,7 +33,7 @@ async function selectLogin(email, password, idRede){
     const sql = 'select id_usuario as idUsuario from usuario where email = ? and password = ? and id_rede = ? ';
 
     const ret = await conn.query(sql, [email, password, idRede]) 
-    conn.end;
+    conn.end()
     return ret;
 
 } 
@@ -42,10 +42,26 @@ async function getIdUsuarioDestino(idRede, email){
     const conn = await connect();
     const sql = "select id_usuario as idUsuario from usuario where email = ? and id_rede = ? "
     const ret = await conn.query(sql, [email, idRede]) 
-    conn.end;
+    conn.end()
     return ret;
 
 } 
+
+async function selectExtrato(idUsuario){
+    const conn = await connect();
+    const sql = `select 'Debito' as tipo, valor, email, data from transacao, usuario 
+    where id_usuario_orig = ?
+    and id_usuario = id_usuario_dest
+    union
+    select 'Credito' as tipo, valor, email, data  from transacao, usuario 
+    where id_usuario_dest = ?
+    and id_usuario = id_usuario_orig`
+    const ret = await conn.query(sql, [idUsuario, idUsuario]) 
+    conn.end()
+    return ret;
+
+} 
+
 
 async function selectGenesis(idRede){
     const conn = await connect();
@@ -59,7 +75,7 @@ async function selectGenesis(idRede){
     order by t.data desc  `
 
     const ret = await conn.query(sql, [idRede]) 
-    conn.end;
+    conn.end()
     return ret;
 
 } 
@@ -73,9 +89,9 @@ async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valo
     });
 
     const ret = await sqlExec
-    conn.end;
+    conn.end()
     return ret;
 
 } 
 
-module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino}
+module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino, selectExtrato}

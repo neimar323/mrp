@@ -49,6 +49,22 @@ async function saldo(req, res, next){
   }
 } 
 
+app.get('/extrato', verifyJWT, extrato);
+
+async function extrato(req, res, next){ 
+  try {
+    console.log('called extrato')
+    var idUsuario = req.query.idUsuario;
+    const [extratoRet] = await db.selectExtrato(idUsuario);
+    res.json(extratoRet);
+  } catch (error) {
+    res.status(500);
+    res.json(error);
+  }
+} 
+
+
+
 function hashMRP(pwd){
   var crypto = require('crypto');
   var hash = crypto.createHash('sha256').update(salt+pwd).digest('base64');
