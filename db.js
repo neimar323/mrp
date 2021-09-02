@@ -63,6 +63,16 @@ async function selectExtrato(idUsuario){
 } 
 
 
+async function selectEmailEidRedeExiste(idRede, email){
+    const conn = await connect();
+    const sql = `select count(*) as count from usuario where id_rede = ? and email = ?`
+    const ret = await conn.query(sql, [idRede, email]) 
+    conn.end()
+    return ret;
+
+} 
+
+
 async function selectGenesis(idRede){
     const conn = await connect();
 
@@ -107,4 +117,4 @@ async function insertTransaction(idRede, idUsuarioOrigem, idUsuarioDestino, valo
 
 } 
 
-module.exports ={selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino, selectExtrato, insertUsuario}
+module.exports ={selectEmailEidRedeExiste, selectRede, selectLogin, insertTransaction, selectSaldo, selectGenesis, getIdUsuarioDestino, selectExtrato, insertUsuario}

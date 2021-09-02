@@ -139,6 +139,13 @@ async function registrar(req, res, next){
     const nome = req.body.nome
     const email = req.body.email
 
+    const [count] = await db.selectEmailEidRedeExiste(idRede, email)
+    //console.log(count[0].count)
+    if( count[0].count > 0 ){  
+      res.status(401);
+      return res.json("Conta ja existe nessa rede.");
+    }
+
     await db.insertUsuario(idRede, nome, email, passwordHashed);
     res.status(200);
     return res.json("Conta criada");
