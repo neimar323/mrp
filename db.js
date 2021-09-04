@@ -16,7 +16,7 @@ async function selectRede(){
 
 async function selectSaldo(idUsuario){
     const conn = await connect();
-    sql = `select saldo, r.sigla_ponto as siglaPonto
+    sql = `select saldo, r.sigla_ponto as siglaPonto, u.nome, u.email
     from usuario u, rede r 
     where id_usuario = ?
     and r.id_rede = u.id_rede
