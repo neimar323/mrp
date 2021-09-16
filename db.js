@@ -55,7 +55,8 @@ async function selectExtrato(idUsuario){
     union
     select 'Credito' as tipo, valor, email, mensagem, data  from transacao, usuario 
     where id_usuario_dest = ?
-    and id_usuario = id_usuario_orig`
+    and id_usuario = id_usuario_orig
+    order by data desc`
     const ret = await conn.query(sql, [idUsuario, idUsuario]) 
     conn.end()
     return ret;
